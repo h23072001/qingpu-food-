@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>青埔美食清單（帶孫好幫手）</title>
+<style>
+body{font-family:"Microsoft JhengHei","PingFang TC",sans-serif;margin:0;background:#fff8ef;color:#222;font-size:22px;line-height:1.6}
+header{background:#e8590c;color:#fff;padding:18px;text-align:center;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:32px}header p{margin:4px 0 0;font-size:18px}
+.tabs{display:flex;flex-wrap:wrap;gap:10px;padding:14px;justify-content:center;background:#fff3e0;position:sticky;top:96px;z-index:4}
+.tabs button{font-size:22px;padding:10px 18px;border-radius:30px;border:3px solid #e8590c;background:#fff;color:#e8590c;font-weight:bold;cursor:pointer}
+.tabs button.on{background:#e8590c;color:#fff}
+.tip{max-width:900px;margin:14px auto;background:#fff;border-left:8px solid #2b8a3e;padding:12px 18px;border-radius:10px;font-size:20px}
+main{max-width:900px;margin:auto;padding:0 12px 40px}
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,.12);margin:16px 0;padding:18px;display:flex;gap:16px}
+.icon{font-size:64px;line-height:1}
+.info{flex:1}
+.tag{display:inline-block;background:#ffe8cc;color:#d9480f;border-radius:8px;padding:2px 10px;font-size:18px;font-weight:bold}
+.name{font-size:28px;font-weight:bold;margin:4px 0}
+.dish{color:#c92a2a;font-weight:bold}
+.meta{font-size:19px;color:#555}
+.kid{font-size:19px;color:#2b8a3e}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.btns a{font-size:21px;text-decoration:none;padding:10px 16px;border-radius:12px;color:#fff;font-weight:bold}
+.map{background:#1971c2}.pic{background:#7048e8}.tel{background:#2b8a3e}
+footer{text-align:center;font-size:16px;color:#777;padding:20px}
+@media(max-width:600px){.card{flex-direction:column}.tabs{top:110px}}
+</style></head><body>
+<header><h1>🍱 青埔美食清單</h1><p>點「📍導航」直接開 Google 地圖｜點「📷看照片」看餐點樣子</p></header>
+<div class="tabs" id="tabs"></div>
+<div class="tip">💡 <b>小提醒：</b>便當店中午 11:30–13:00 人最多，建議先打電話訂。出門前在地圖上確認「今天有沒有開」。</div>
+<main id="list"></main>
+<footer>資料整理自網路食記（UpToGo、愛食記、食尚玩家、Darren 蘋果樹、瑋瑋美食萬歲、阿府等），營業時間可能變動，以店家公告為準。</footer>
+<script>
+const D=[
+["便當","🍱","品吉池上便當（文德店）","什錦烤麩飯、私房滷排飯、紅燒豬蹄飯","中壢區文德路100號（近A19）","","乾淨衛生出名；青峯店（青峯路二段35號）還有港點、水餃"],
+["便當","🍱","想吃便當 bento","招牌酥脆炸雞腿飯","中壢區領航北路二段198號","03-287-6767","雞腿外脆不油，週六公休"],
+["便當","🍱","食藝飯包","炸雞腿便當","中壢區領航南路一段13號","03-422-5200","飯量可選 1/2、1/4，週日公休"],
+["便當","🍱","一粒便當","超大炸雞排飯","中壢區青埔六街171號","","附熱湯、冬瓜茶，像家庭小館"],
+["便當","🍗","十一雞 國產土雞便當","紹興醉雞腿、招牌油雞絲","大園區大華一街19號","","土雞肉嫩，小孩好入口（醉雞有酒香，小孩選油雞）"],
+["便當","🥗","KIND FOOD 康福先生","舒肥雞胸餐盒、花椰菜米炒飯、低脂康福餃","中壢區領航南路三段476號","","清淡健康，適合長輩"],
+["便當","🍱","甲一飯包（桃園青埔店）","池上木片飯包","大園區新生路四段（近A18）","","經典台式飯包"],
+["便當","🍖","梁社漢排骨（中壢青埔店）","炸排骨飯、紅燒排骨飯","中壢區青埔六街","","連鎖店，口味穩定"],
+["燒臘","🦆","馮廚港式燒臘","至尊五寶飯、脆皮烤鴨飯、脆皮燒肉","中壢區青松街317號","03-287-5742","烤鴨無腥味；週日公休"],
+["燒臘","🦆","玉菊園港式燒臘","金牌三寶飯、單點叉燒","中壢區春德路138號（近XPARK）","","份量大、可單點肉帶回家加菜"],
+["燒臘","🦆","贊記港式燒臘","港式三寶飯","中壢區洽溪路301號","","百元內、配菜自己挑"],
+["小吃","🍜","青埔陳記小吃","炒飯、炒麵、黑白切","中壢區青埔九街46號","03-453-3558","份量很大；尖峰時間不接外帶，週日公休"],
+["小吃","🥟","香港煎包（青埔總店）","蝦仁／豬肉／牛肉煎包","中壢區新生路三段828號","0933-964-187","下午茶點心；週一～五 14:00 起，週末休。很燙要放涼再給小孩"],
+["小吃","🌭","正光照相館（米腸香腸）","紅糟肉雙拼（香腸＋米腸）","大園區高鐵北路三段418之1號","0913-398-335","只開週六、日 11:00–19:00"],
+["小吃","🍜","雲之滇 米干・米線","米干、米線","中壢區領航南路一段152號","","平價湯麵，小孩好吃"],
+["小吃","🥟","來甲餃子","水餃","中壢區永信路213號","","買冷凍水餃回家很方便"],
+["小吃","🥟","彩色貨櫃屋脆皮肉圓","脆皮肉圓","中壢區月眉路二段338號","",""],
+["早餐","🍳","大園手工報紙蛋餅","雙蛋蛋餅（下午有麵線）","大園區中正東路三段33號","0972-384-470","清晨 5:30 開，週一公休；人多可先電話訂"],
+["早餐","🥪","桃司廚 青埔店","蛋餅、厚片吐司、早午餐","中壢區青峰路一段43號","0975-660-034","06:30–14:00"],
+["早餐","🥪","拿米 青埔店","中式早餐","中壢區青商路528號","","06:30–13:30，週日休"],
+["早餐","🥪","歐浮找餐（青埔青松店）","早午餐","中壢區青松街191號","","06:30–14:00"],
+["早餐","🥟","611豆漿店","小籠湯包、豆漿","青埔 611豆漿店","","湯包很燙，先戳洞放涼"],
+["商場","🥟","華漾 DIM SUM（華泰名品城）","水晶蝦餃、腸粉、蘿蔔糕、叉燒包","中壢區春德路189號 華泰名品城","","空間寬敞，適合長輩坐著吃"],
+["商場","🥟","港點大師（IKEA大全聯）","港式點心","中壢區高鐵站前東路一段1號","","下雨天去 IKEA 最方便"],
+["商場","🍣","藏壽司 桃園青埔店","炙烤照燒鮭魚、豆乳甜甜圈","中壢區領航南路三段395號","","用「E排客」App 先抽號碼；有停車場"],
+["商場","🍣","壽司郎 桃園青埔IKEA店","迴轉壽司","中壢區高鐵站前東路一段1號","","小孩可點玉子燒、熟蝦"],
+["商場","🧆","IKEA 瑞典餐廳","瑞典肉丸、炸雞翅","中壢區高鐵站前東路一段1號 5樓","","09:00–21:00，有兒童椅"],
+["商場","🌭","IKEA 美食小站","熱狗、牛肉捲、霜淇淋","IKEA 桃園店 出口","","便宜快速"],
+["商場","🍗","繼光香香雞（青埔大全聯）","香香雞、雞排","中壢區高鐵站前東路一段1號","","逛大全聯順便買"],
+["商場","🍛","咖哩樹（環球A19）","炸豬里肌咖哩飯＋歐姆蛋","環球購物中心 A19 3樓","03-287-6067","有兒童餐、純素咖哩"],
+["商場","🍱","藏王日式食堂（環球A19）","海老蝦丼飯","環球購物中心 A19 5樓","03-287-6978","有兒童餐"],
+["商場","🥟","花蓮扁食（華泰）","扁食湯","華泰名品城 花蓮扁食","","清淡，小孩長輩都適合"],
+["商場","🍜","老董牛肉麵（華泰）","牛肉麵","華泰名品城 老董牛肉麵","",""],
+["點心","🍞","人人麵包專業烘焙","奶油小餐包、爆漿餐包","中壢區月眉路三段213號","0908-228-681","牛排館御用餐包；週日休"],
+["點心","🍮","花杓豆坊","豆花","大園區大成路二段37號","0917-174-679","大園高中對面，週一休；糖水偏甜"],
+["點心","🥐","我們咖啡 nous cafe","限量手工肉桂捲","中壢區青商路308號","03-287-3892","要早點去"],
+["點心","🫘","燊森紅豆餅","紅豆餅","大園區中正東路三段33號","","13:00–18:00"],
+["點心","🧋","萬波島嶼紅茶（高鐵站前店）","楊枝甘露、黑糖珍珠鮮奶","中壢區高鐵站前西路二段202號","03-287-3332","小孩請選鮮奶、無茶、少糖"]
+];
+const cats=["全部","便當","燒臘","小吃","早餐","商場","點心"];
+const tabs=document.getElementById('tabs'),list=document.getElementById('list');
+function show(c){
+ [...tabs.children].forEach(b=>b.classList.toggle('on',b.textContent.startsWith(c)));
+ list.innerHTML=D.filter(r=>c=="全部"||r[0]==c).map(r=>{
+  const q=encodeURIComponent(r[2].replace(/（.*?）/g,' ')+' '+(r[4].includes('區')?r[4]:'青埔'));
+  return `<div class="card"><div class="icon">${r[1]}</div><div class="info">
+  <span class="tag">${r[0]}</span><div class="name">${r[2]}</div>
+  <div>👉 推薦：<span class="dish">${r[3]}</span></div>
+  <div class="meta">📍 ${r[4]}</div>${r[6]?`<div class="kid">👶 ${r[6]}</div>`:''}
+  <div class="btns"><a class="map" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${q}">📍 導航</a>
+  <a class="pic" target="_blank" href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(r[2]+' '+r[3].split('、')[0])}">📷 看照片</a>
+  ${r[5]?`<a class="tel" href="tel:${r[5].replace(/-/g,'')}">📞 打電話</a>`:''}</div></div></div>`}).join('');
+}
+cats.forEach(c=>{const b=document.createElement('button');b.textContent=c+(c=="全部"?`（${D.length}）`:'');b.onclick=()=>show(c);tabs.appendChild(b)});
+show("全部");
+</script></body></html>
